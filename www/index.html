@@ -103,6 +103,54 @@
   .quick { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
   .quick button { font:inherit; font-weight:700; font-size:14px; padding:9px 14px; border-radius:99px; border:0; background:#E4E7FB; color:var(--ac); cursor:pointer; }
   .quick button:active { transform:scale(.95); }
+
+  /* ===== ANIMASI ===== */
+  .pill b { display:inline-block; }
+  .face { transform-origin:50% 100%; animation:float 3.4s ease-in-out infinite; }
+  .face img { transform-origin:50% 100%; cursor:pointer; -webkit-user-drag:none; user-select:none; }
+  .hero.dekat .face { animation:alert 1.8s ease-in-out infinite; }
+  .hero.marah .face { animation:stomp 1s ease-in-out infinite; }
+  .hero.telat .face { animation:tremble 2.2s linear infinite; }
+  .hero.yes .face { animation:cheer .9s ease-out 2, float 3.4s ease-in-out 1.8s infinite; }
+  @keyframes float { 0%,100%{transform:translateY(0) scale(1,1) rotate(0)} 50%{transform:translateY(-6px) scale(1.02,1.035) rotate(1.2deg)} }
+  @keyframes alert { 0%,55%,100%{transform:translateY(0) rotate(0)} 62%{transform:translateY(-8px) rotate(-6deg)} 72%{transform:translateY(-3px) rotate(6deg)} 82%{transform:translateY(-6px) rotate(-4deg)} 92%{transform:translateY(0) rotate(2deg)} }
+  @keyframes stomp { 0%,100%{transform:translateY(0) scale(1,1)} 15%{transform:scale(1.07,.92)} 35%{transform:translateY(-16px) scale(.95,1.07) rotate(-3deg)} 55%{transform:translateY(0) scale(1.09,.9) rotate(3deg)} 68%{transform:scale(.98,1.02)} }
+  @keyframes tremble { 0%,52%,100%{transform:scale(1.02) rotate(0)} 56%{transform:translateX(-6px) rotate(-4deg)} 60%{transform:translateX(6px) rotate(4deg)} 64%{transform:translateX(-6px) rotate(-4deg)} 68%{transform:translateX(6px) rotate(4deg)} 72%{transform:translateX(-4px) rotate(-3deg)} 76%{transform:translateX(4px) rotate(3deg)} 82%{transform:translateX(-2px)} 88%{transform:translateX(0)} }
+  @keyframes cheer { 0%{transform:scale(1,1)} 20%{transform:scale(1.12,.88)} 45%{transform:translateY(-28px) scale(.94,1.1) rotate(-5deg)} 70%{transform:translateY(0) scale(1.1,.9) rotate(4deg)} 85%{transform:scale(.98,1.03)} 100%{transform:scale(1,1)} }
+  .face img.swap { animation:swap .5s cubic-bezier(.3,1.6,.5,1); }
+  .face img.boing { animation:boing .6s ease-out; }
+  @keyframes swap { from{transform:scale(.5) rotate(-10deg);opacity:.2} to{transform:scale(1) rotate(0);opacity:1} }
+  @keyframes boing { 0%{transform:scale(1,1)} 25%{transform:scale(1.15,.84)} 50%{transform:translateY(-16px) scale(.92,1.1)} 75%{transform:scale(1.06,.95)} 100%{transform:scale(1,1)} }
+  .bubble.pop { animation:bpop .4s cubic-bezier(.3,1.6,.5,1); }
+  @keyframes bpop { from{transform:scale(.85);opacity:.3} to{transform:scale(1);opacity:1} }
+
+  .page.stag > *, .page.stag li { animation:rise .5s cubic-bezier(.2,.8,.2,1) both; }
+  .page.stag > *:nth-child(2){animation-delay:.05s} .page.stag > *:nth-child(3){animation-delay:.1s} .page.stag > *:nth-child(4){animation-delay:.15s}
+  .page.stag > *:nth-child(5){animation-delay:.2s} .page.stag > *:nth-child(6){animation-delay:.25s} .page.stag > *:nth-child(n+7){animation-delay:.3s}
+  .page.stag li:nth-child(1){animation-delay:.1s} .page.stag li:nth-child(2){animation-delay:.16s} .page.stag li:nth-child(3){animation-delay:.22s}
+  .page.stag li:nth-child(4){animation-delay:.28s} .page.stag li:nth-child(n+5){animation-delay:.34s}
+  .page.stag .day .dot { animation:pop .45s cubic-bezier(.3,1.6,.5,1) both; }
+  .page.stag .day:nth-child(1) .dot{animation-delay:.3s} .page.stag .day:nth-child(2) .dot{animation-delay:.35s} .page.stag .day:nth-child(3) .dot{animation-delay:.4s}
+  .page.stag .day:nth-child(4) .dot{animation-delay:.45s} .page.stag .day:nth-child(5) .dot{animation-delay:.5s} .page.stag .day:nth-child(6) .dot{animation-delay:.55s} .page.stag .day:nth-child(7) .dot{animation-delay:.6s}
+  @keyframes rise { from{opacity:0;transform:translateY(22px)} to{opacity:1;transform:none} }
+  @keyframes pop { from{opacity:0;transform:scale(.3)} to{opacity:1;transform:scale(1)} }
+  .card.new { animation:cardin .55s cubic-bezier(.3,1.4,.5,1); }
+  @keyframes cardin { from{opacity:0;transform:translateX(-30px) scale(.94)} to{opacity:1;transform:none} }
+  .card.out { animation:cardout .28s ease-in forwards !important; }
+  @keyframes cardout { to{opacity:0;transform:translateX(70px) scale(.92)} }
+  .btn.check:active { transform:scale(.85); }
+  .bump { animation:bump .45s cubic-bezier(.3,1.6,.5,1); }
+  @keyframes bump { 0%{transform:scale(1)} 40%{transform:scale(1.5) rotate(-6deg)} 100%{transform:scale(1)} }
+  .nav button.on svg { animation:navpop .45s cubic-bezier(.3,1.6,.5,1); }
+  @keyframes navpop { from{transform:scale(.75)} to{transform:scale(1)} }
+  .fab.on { animation:fabin .45s cubic-bezier(.3,1.4,.5,1); }
+  @keyframes fabin { from{opacity:0;transform:translateX(-50%) translateY(24px)} to{opacity:1;transform:translateX(-50%)} }
+  .toast { transition:.4s cubic-bezier(.3,1.5,.5,1); }
+  dialog[open] { animation:sheet .38s cubic-bezier(.2,.9,.25,1); }
+  dialog[open]::backdrop { animation:fade .3s; }
+  @keyframes sheet { from{transform:translateY(100%)} to{transform:none} }
+  @keyframes fade { from{opacity:0} }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation:none !important; transition:none !important; } }
 </style>
 </head>
 <body>
@@ -137,6 +185,7 @@
     <div class="stat"><b id="sTotal">0</b><span>Tugas selesai</span></div>
     <div class="stat"><b id="sOn">0</b><span>Tepat waktu</span></div>
   </div>
+  <div style="padding:0 18px 24px"><button class="btn" id="testN" style="width:100%">Tes notifikasi (5 detik)</button></div>
 </main>
 
 <!-- JADWAL -->
@@ -188,7 +237,7 @@ const MOODS = {
   yes2:  {face:6,  say:"Makasih udah selesai, ya.", cls:"yes"}
 };
 const GOAL = 3, KEY = "remindgo.v1", HARI = ["Min","Sen","Sel","Rab","Kam","Jum","Sab"];
-let cheer = null;
+let cheer = null, justAdded = null, lastXp = null, lastStreak = null;
 let db = { tasks:[], xp:0, streak:0, lastDay:"", days:{}, total:0, ontime:0 };
 try { db = Object.assign(db, JSON.parse(localStorage.getItem(KEY))); } catch (e) {}
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch (e) {} };
@@ -202,9 +251,24 @@ function fmtLeft(ms){
   const s = m>=1440 ? Math.floor(m/1440)+" hari" : m>=60 ? Math.floor(m/60)+" jam" : m+" menit";
   return ms<0 ? "Telat "+s : s+" lagi";
 }
+const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const replay = (el, c) => { el.classList.remove(c); void el.offsetWidth; el.classList.add(c); setTimeout(() => el.classList.remove(c), 900); };
+function burst(x, y){
+  if (calm) return;
+  const cols = ["#3B4BDB","#1B9E6A","#F5A623","#E5484D","#FF7AB6","#2BB3E8"];
+  for (let i = 0; i < 24; i++) {
+    const d = document.createElement("i"), z = 6 + Math.random()*7, a = Math.random()*Math.PI*2, v = 60 + Math.random()*120;
+    d.style.cssText = "position:fixed;z-index:99;pointer-events:none;left:"+x+"px;top:"+y+"px;width:"+z+"px;height:"+(Math.random()<.5 ? z : z/2)+"px;background:"+cols[i%cols.length]+";border-radius:"+(Math.random()<.5 ? "50%" : "2px");
+    document.body.appendChild(d);
+    d.animate([{ transform:"translate(0,0) rotate(0)", opacity:1 },
+               { transform:"translate("+Math.cos(a)*v+"px,"+(Math.sin(a)*v+30)+"px) rotate("+Math.random()*540+"deg)", opacity:0 }],
+              { duration:800 + Math.random()*400, easing:"cubic-bezier(.2,.7,.4,1)" }).onfinish = () => d.remove();
+  }
+}
 function toast(t){ const e=$("toast"); e.textContent=t; e.classList.add("on"); setTimeout(()=>e.classList.remove("on"),1800); }
 function finish(t){
   const now = Date.now(), ontime = now <= t.at, gain = ontime ? 10 : 2;
+  unschedule(t);
   t.done = true; db.xp += gain; db.total++; if (ontime) db.ontime++;
   const today = dayStr(now);
   db.days[today] = (db.days[today]||0) + 1;
@@ -217,7 +281,7 @@ function finish(t){
 function card(t, now, withBtn){
   const ms = t.at - now;
   const li = document.createElement("li");
-  li.className = "card" + (ms<0 ? " late" : ms<=60*60e3 ? " soon" : "");
+  li.className = "card" + (ms<0 ? " late" : ms<=60*60e3 ? " soon" : "") + (t.id === justAdded ? " new" : "");
   const box = document.createElement("div"); box.className = "t";
   const chip = document.createElement("span"); chip.className = "chip"; chip.textContent = fmtLeft(ms);
   const ttl = document.createElement("div"); ttl.textContent = t.title;
@@ -226,7 +290,12 @@ function card(t, now, withBtn){
   box.append(chip, ttl, sm); li.appendChild(box);
   if (withBtn) {
     const b = document.createElement("button"); b.className = "btn green check"; b.textContent = "✓"; b.setAttribute("aria-label","Selesai");
-    b.onclick = () => finish(t); li.appendChild(b);
+    b.onclick = () => {
+      if (li.classList.contains("out")) return;
+      const r = b.getBoundingClientRect(); burst(r.left + r.width/2, r.top + r.height/2);
+      li.classList.add("out"); setTimeout(() => finish(t), calm ? 0 : 260);
+    };
+    li.appendChild(b);
   }
   return li;
 }
@@ -236,12 +305,18 @@ function render(){
   const alive = db.lastDay === today || db.lastDay === dayAgo(1);
   const streak = alive ? db.streak : 0;
   $("streak").textContent = streak; $("xp").textContent = db.xp;
+  if (lastXp !== null && db.xp !== lastXp) replay($("xp"), "bump");
+  if (lastStreak !== null && streak !== lastStreak) replay($("streak"), "bump");
+  lastXp = db.xp; lastStreak = streak;
   $("lvl").textContent = "Level " + (Math.floor(db.xp/100)+1);
   $("xpn").textContent = (db.xp%100) + "/100"; $("bar").style.width = (db.xp%100) + "%";
 
   // maskot
   const m = MOODS[cheer && now < cheer.until ? cheer.key : open.length ? moodFor(open[0].at-now) : "kosong"];
-  $("face").src = "m" + m.face + ".png"; $("say").textContent = m.say; $("hero").className = "hero " + m.cls;
+  const fi = $("face"), src = "m" + m.face + ".png";
+  if (fi.getAttribute("src") !== src) { fi.src = src; replay(fi, "swap"); }
+  if ($("say").textContent !== m.say) { $("say").textContent = m.say; replay($("say"), "pop"); }
+  $("hero").className = "hero " + m.cls;
 
   // berikutnya
   const nx = $("next"); nx.innerHTML = "";
@@ -279,7 +354,9 @@ function go(p){
   ["Home","Jadwal"].forEach(x => { $("pg"+x).classList.toggle("on", x===p); });
   document.querySelectorAll(".nav button").forEach(b => b.classList.toggle("on", b.dataset.p===p));
   $("fab").classList.toggle("on", p==="Jadwal"); scrollTo(0,0);
+  stag($("pg"+p));
 }
+function stag(pg){ pg.classList.remove("stag"); void pg.offsetWidth; pg.classList.add("stag"); setTimeout(() => pg.classList.remove("stag"), 1000); }
 document.querySelector(".nav").onclick = e => { const b = e.target.closest("button"); if (b) go(b.dataset.p); };
 
 function openDlg(){ $("dlg").showModal(); $("title").focus(); }
@@ -294,10 +371,70 @@ $("quick").onclick = e => {
 $("save").onclick = () => {
   const title = $("title").value.trim(), at = new Date($("when").value).getTime();
   if (!title || isNaN(at)) { $("title").focus(); return; }
-  db.tasks.push({ id:Date.now(), title, at, done:false });
+  const nt = { id:Date.now(), title, at, done:false };
+  justAdded = nt.id; setTimeout(() => justAdded = null, 1500);
+  db.tasks.push(nt); save(); schedule(nt);
   save(); $("title").value = ""; $("when").value = ""; $("dlg").close(); render();
 };
-render(); setInterval(render, 30000);
+// ===== Notifikasi (Capacitor Local Notifications) =====
+const LN = (window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.LocalNotifications) || null;
+const CH = "remindgo_alert";
+const TITLES = { hari:"Besok ada jadwal", jam:"1 jam lagi!", menit:"10 menit lagi!", pas:"Waktunya sekarang!", telat:"Kamu lupa aku ya?!" };
+const TEXT = {
+  hari:  ["Besok: {t}. Catat ya!", "H-1: {t}. Jangan lupa~"],
+  jam:   ["{t} tinggal 1 jam lagi. Siap-siap yuk!", "Sejam lagi: {t}. Aku ingetin lho."],
+  menit: ["{t} 10 menit lagi! Ayo gerak!", "Tinggal 10 menit: {t}!"],
+  pas:   ["Sekarang waktunya: {t}!", "{t}, sekarang ya. Jangan ditunda!"],
+  telat: ["{t} udah lewat. Aku ngambek nih!", "Hei! {t} belum selesai!", "Kamu lupa aku ya? {t} telat lho."]
+};
+// [selisih waktu ms, jenis, nomor gambar maskot]
+const PLAN = [[-864e5,"hari",0],[-36e5,"jam",5],[-6e5,"menit",15],[0,"pas",2]].concat([1,2,3,4,5,6].map(n => [n*3e5,"telat",8]));
+const pick = a => a[Math.floor(Math.random()*a.length)];
+async function schedule(t){
+  if (!LN) return;
+  try {
+    if (!t.nid) { db.nid = (db.nid||0) + 1; t.nid = db.nid; save(); }
+    const now = Date.now(), list = [];
+    PLAN.forEach(([off,k,face],i) => {
+      const at = t.at + off; if (at <= now + 2000) return;
+      list.push({ id:t.nid*20+i, title:TITLES[k], body:pick(TEXT[k]).replace("{t}",t.title), largeIcon:"m"+face,
+                  channelId:CH, schedule:{ at:new Date(at), allowWhileIdle:true } });
+    });
+    if (list.length) await LN.schedule({ notifications:list });
+  } catch (e) { toast("Notifikasi gagal dijadwalkan"); }
+}
+function unschedule(t){
+  if (!LN || !t.nid) return;
+  LN.cancel({ notifications: PLAN.map((_,i) => ({ id:t.nid*20+i })) }).catch(()=>{});
+}
+async function askPerm(){
+  await LN.createChannel({ id:CH, name:"Pengingat", description:"Pengingat jadwal Remind Go", importance:5, visibility:1, vibration:true });
+  let p = await LN.checkPermissions();
+  if (p.display !== "granted") p = await LN.requestPermissions();
+  if (p.display !== "granted") { toast("Izin notifikasi ditolak. Aktifkan di Pengaturan HP."); return false; }
+  try {
+    const ex = await LN.checkExactNotificationSetting();
+    if (ex.exact_alarm !== "granted" && confirm("Izinkan alarm tepat waktu supaya pengingat tidak telat?")) await LN.changeExactNotificationSetting();
+  } catch (e) {}
+  return true;
+}
+async function initNotif(){
+  if (!LN) return;
+  try { if (await askPerm()) db.tasks.filter(t => !t.done).forEach(schedule); } catch (e) {}
+}
+$("testN").onclick = async () => {
+  if (!LN) { toast("Hanya jalan di app Android"); return; }
+  try {
+    if (!(await askPerm())) return;
+    await LN.schedule({ notifications:[{ id:1, title:"Tes Remind Go", body:"Kalau ini muncul, notifikasi aman!", largeIcon:"m4",
+                                        channelId:CH, schedule:{ at:new Date(Date.now()+5000), allowWhileIdle:true } }] });
+    toast("Tutup app, tunggu 5 detik");
+  } catch (e) { toast("Gagal: " + (e.message || e)); }
+};
+initNotif();
+$("hero").addEventListener("click", () => replay($("face"), "boing"));
+
+render(); stag($("pgHome")); setInterval(render, 30000);
 </script>
 </body>
 </html>
