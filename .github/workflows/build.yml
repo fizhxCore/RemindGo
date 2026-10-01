@@ -26,6 +26,14 @@ jobs:
       - name: Generate Android project
         run: |
           npx cap add android
+          M=android/app/src/main/AndroidManifest.xml
+          sed -i 's#</manifest>#    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>\n    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>\n    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>\n    <uses-permission android:name="android.permission.VIBRATE"/>\n</manifest>#' $M
+          mkdir -p android/app/src/main/res/drawable
+          cp www/m*.png android/app/src/main/res/drawable/
+          pip install pillow
+          python make_assets.py
+          npx capacitor-assets generate --android
+          python patch_android.py
           npx cap sync android
 
       - name: Build APK
