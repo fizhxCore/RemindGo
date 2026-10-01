@@ -150,10 +150,32 @@
   dialog[open]::backdrop { animation:fade .3s; }
   @keyframes sheet { from{transform:translateY(100%)} to{transform:none} }
   @keyframes fade { from{opacity:0} }
-  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation:none !important; transition:none !important; } }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation:none !important; transition:none !important; } .bbar i { width:100%; } }
+  .sw { display:flex; align-items:center; justify-content:space-between; gap:14px; }
+  .sw b { font-size:17px; font-weight:800; } .sw small { display:block; color:var(--mute); font-size:13px; font-weight:500; margin-top:4px; line-height:1.35; }
+  .switch { position:relative; width:52px; height:30px; flex:none; }
+  .switch input { position:absolute; inset:0; width:100%; height:100%; margin:0; padding:0; border:0; opacity:0; z-index:2; cursor:pointer; }
+  .switch i { position:absolute; inset:0; background:var(--line); border-radius:99px; transition:.25s; }
+  .switch i::after { content:""; position:absolute; left:3px; top:3px; width:24px; height:24px; border-radius:50%; background:#fff; transition:.25s cubic-bezier(.3,1.5,.5,1); box-shadow:0 1px 3px rgba(0,0,0,.25); }
+  .switch input:checked + i { background:var(--ok); } .switch input:checked + i::after { transform:translateX(22px); }
+  .switch input:focus-visible + i { outline:3px solid var(--ac); outline-offset:2px; }
+  .quick button.sel { background:var(--ink); color:#fff; }
+  .card .t { cursor:pointer; }
+  #del { color:var(--late); }
+  /* loading screen */
+  #boot { position:fixed; inset:0; z-index:100; background:#D9DDFB; display:grid; place-content:center; justify-items:center; gap:12px; transition:opacity .5s, transform .5s; }
+  #boot.gone { opacity:0; transform:scale(1.06); pointer-events:none; }
+  #boot img { width:190px; height:190px; object-fit:contain; transform-origin:50% 100%; animation:float 1.6s ease-in-out infinite; }
+  #boot b { font-size:30px; font-weight:800; letter-spacing:-.02em; }
+  #boot p { font-size:15px; color:var(--mute); font-weight:700; margin-top:-6px; }
+  .bbar { width:150px; height:8px; border-radius:99px; background:rgba(255,255,255,.7); overflow:hidden; margin-top:10px; }
+  .bbar i { display:block; height:100%; width:0; background:var(--ac); border-radius:99px; animation:load 1.3s cubic-bezier(.3,.7,.3,1) forwards; }
+  @keyframes load { to { width:100%; } }
 </style>
 </head>
 <body>
+
+<div id="boot"><img src="m0.png" alt=""><b>Remind Go</b><p>Aku ingetin kamu, ya!</p><div class="bbar"><i></i></div></div>
 
 <header class="top">
   <strong class="brand">Remind Go</strong>
@@ -185,6 +207,10 @@
     <div class="stat"><b id="sTotal">0</b><span>Tugas selesai</span></div>
     <div class="stat"><b id="sOn">0</b><span>Tepat waktu</span></div>
   </div>
+  <div class="box sw" style="margin-top:14px">
+    <div><b>Ikon dinamis</b><small>Ikon app ikut berubah: kaget, cemberut, lalu ngambek saat jadwal mendekat. Kalau ikon di layar utama hilang, taruh lagi dari daftar app.</small></div>
+    <label class="switch"><input type="checkbox" id="dyn" aria-label="Ikon dinamis"><i></i></label>
+  </div>
   <div style="padding:0 18px 24px"><button class="btn" id="testN" style="width:100%">Tes notifikasi (5 detik)</button></div>
 </main>
 
@@ -208,7 +234,7 @@
 <div class="toast" id="toast"></div>
 
 <dialog id="dlg">
-  <h3>Pengingat baru</h3>
+  <h3 id="dlgT">Pengingat baru</h3>
   <label for="title">Apa yang mau diingat?</label>
   <input id="title" placeholder="Contoh: Kumpulin tugas" autocomplete="off">
   <label for="when">Kapan?</label>
@@ -219,8 +245,16 @@
     <button type="button" data-m="180">+3 jam</button>
     <button type="button" data-m="tom">Besok pagi</button>
   </div>
+  <label>Ulangi</label>
+  <div class="quick" id="rep">
+    <button type="button" data-r="" class="sel">Sekali</button>
+    <button type="button" data-r="d">Harian</button>
+    <button type="button" data-r="w">Mingguan</button>
+    <button type="button" data-r="wd">Sen–Jum</button>
+  </div>
   <div class="row">
     <button class="btn" id="save">Simpan</button>
+    <button class="btn ghost" id="del" hidden>Hapus</button>
     <button class="btn ghost" id="cancel">Batal</button>
   </div>
 </dialog>
@@ -237,6 +271,21 @@ const MOODS = {
   yes2:  {face:6,  say:"Makasih udah selesai, ya.", cls:"yes"}
 };
 const GOAL = 3, KEY = "remindgo.v1", HARI = ["Min","Sen","Sel","Rab","Kam","Jum","Sab"];
+const REPL = { "":"", d:"Harian", w:"Mingguan", wd:"Sen–Jum" };
+function stepNext(t, at){
+  const d = new Date(at);
+  if (t.rep === "w") d.setDate(d.getDate() + 7);
+  else if (t.rep === "wd") { do d.setDate(d.getDate() + 1); while (d.getDay() === 0 || d.getDay() === 6); }
+  else d.setDate(d.getDate() + 1);
+  return d.getTime();
+}
+function roll(t){ // jadwal berulang yang kelewat sehari penuh: loncat ke jadwal terbaru
+  if (!t.rep || t.done) return false;
+  let ch = false, now = Date.now();
+  while (stepNext(t, t.at) <= now) { t.at = stepNext(t, t.at); ch = true; }
+  return ch;
+}
+let editing = null, repSel = "", delArm = false, delTimer = null;
 let cheer = null, justAdded = null, lastXp = null, lastStreak = null;
 let db = { tasks:[], xp:0, streak:0, lastDay:"", days:{}, total:0, ontime:0 };
 try { db = Object.assign(db, JSON.parse(localStorage.getItem(KEY))); } catch (e) {}
@@ -268,8 +317,12 @@ function burst(x, y){
 function toast(t){ const e=$("toast"); e.textContent=t; e.classList.add("on"); setTimeout(()=>e.classList.remove("on"),1800); }
 function finish(t){
   const now = Date.now(), ontime = now <= t.at, gain = ontime ? 10 : 2;
-  unschedule(t);
-  t.done = true; db.xp += gain; db.total++; if (ontime) db.ontime++;
+  if (t.rep) {
+    let n = stepNext(t, t.at); while (n <= now) n = stepNext(t, n);
+    t.at = n; justAdded = t.id; setTimeout(() => justAdded = null, 1500);
+    unschedule(t).then(() => schedule(t));
+  } else { unschedule(t); t.done = true; }
+  db.xp += gain; db.total++; if (ontime) db.ontime++;
   const today = dayStr(now);
   db.days[today] = (db.days[today]||0) + 1;
   if (db.lastDay !== today) { db.streak = db.lastDay === dayAgo(1) ? db.streak+1 : 1; db.lastDay = today; }
@@ -286,8 +339,8 @@ function card(t, now, withBtn){
   const chip = document.createElement("span"); chip.className = "chip"; chip.textContent = fmtLeft(ms);
   const ttl = document.createElement("div"); ttl.textContent = t.title;
   const sm = document.createElement("small");
-  sm.textContent = new Date(t.at).toLocaleString("id-ID",{weekday:"short",day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"});
-  box.append(chip, ttl, sm); li.appendChild(box);
+  sm.textContent = new Date(t.at).toLocaleString("id-ID",{weekday:"short",day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}) + (t.rep ? " · 🔁 " + REPL[t.rep] : "");
+  box.append(chip, ttl, sm); box.onclick = () => openDlg(t); li.appendChild(box);
   if (withBtn) {
     const b = document.createElement("button"); b.className = "btn green check"; b.textContent = "✓"; b.setAttribute("aria-label","Selesai");
     b.onclick = () => {
@@ -300,6 +353,7 @@ function card(t, now, withBtn){
   return li;
 }
 function render(){
+  db.tasks.forEach(t => { if (roll(t)) { save(); unschedule(t).then(() => schedule(t)); } });
   const now = Date.now(), today = dayStr(now);
   const open = db.tasks.filter(t=>!t.done).sort((a,b)=>a.at-b.at);
   const alive = db.lastDay === today || db.lastDay === dayAgo(1);
@@ -348,6 +402,7 @@ function render(){
   if (!open.length) el.innerHTML = '<div class="empty">Tidak ada pengingat aktif.</div>';
   open.forEach(t => el.appendChild(card(t, now, true)));
   $("cnt").textContent = open.length ? open.length + " aktif" : "";
+  syncIcon(open, now);
 }
 
 function go(p){
@@ -359,23 +414,75 @@ function go(p){
 function stag(pg){ pg.classList.remove("stag"); void pg.offsetWidth; pg.classList.add("stag"); setTimeout(() => pg.classList.remove("stag"), 1000); }
 document.querySelector(".nav").onclick = e => { const b = e.target.closest("button"); if (b) go(b.dataset.p); };
 
-function openDlg(){ $("dlg").showModal(); $("title").focus(); }
-$("open").onclick = openDlg;
+const localInput = ms => { const d = new Date(ms); return new Date(d - d.getTimezoneOffset()*6e4).toISOString().slice(0,16); };
+function setRep(r){ repSel = r; document.querySelectorAll("#rep button").forEach(b => b.classList.toggle("sel", b.dataset.r === r)); }
+function openDlg(t){
+  editing = (t && t.done !== undefined) ? t : null;
+  $("dlgT").textContent = editing ? "Ubah pengingat" : "Pengingat baru";
+  $("title").value = editing ? editing.title : "";
+  $("when").value = editing ? localInput(editing.at) : "";
+  setRep(editing ? (editing.rep || "") : "");
+  $("del").hidden = !editing; $("del").textContent = "Hapus"; delArm = false; clearTimeout(delTimer);
+  $("dlg").showModal(); if (!editing) $("title").focus();
+}
+$("open").onclick = () => openDlg();
 $("cancel").onclick = () => $("dlg").close();
+$("rep").onclick = e => { if (e.target.dataset.r !== undefined) setRep(e.target.dataset.r); };
 $("quick").onclick = e => {
   const m = e.target.dataset.m; if (!m) return;
   const d = m === "tom" ? new Date(new Date().setHours(32,0,0,0)) : new Date(Date.now() + m*60e3);
-  d.setSeconds(0,0);
-  $("when").value = new Date(d - d.getTimezoneOffset()*6e4).toISOString().slice(0,16);
+  d.setSeconds(0,0); $("when").value = localInput(d);
+};
+$("del").onclick = () => {
+  if (!delArm) { delArm = true; $("del").textContent = "Tekan lagi untuk hapus"; delTimer = setTimeout(() => { delArm = false; $("del").textContent = "Hapus"; }, 3000); return; }
+  const t = editing; if (!t) return;
+  unschedule(t); db.tasks = db.tasks.filter(x => x !== t);
+  save(); $("dlg").close(); toast("Dihapus"); render();
 };
 $("save").onclick = () => {
   const title = $("title").value.trim(), at = new Date($("when").value).getTime();
   if (!title || isNaN(at)) { $("title").focus(); return; }
-  const nt = { id:Date.now(), title, at, done:false };
-  justAdded = nt.id; setTimeout(() => justAdded = null, 1500);
-  db.tasks.push(nt); save(); schedule(nt);
-  save(); $("title").value = ""; $("when").value = ""; $("dlg").close(); render();
+  if (editing) {
+    const t = editing; t.title = title; t.at = at; t.rep = repSel;
+    save(); unschedule(t).then(() => schedule(t)); toast("Disimpan");
+  } else {
+    const nt = { id:Date.now(), title, at, rep:repSel, done:false };
+    justAdded = nt.id; setTimeout(() => justAdded = null, 1500);
+    db.tasks.push(nt); save(); schedule(nt);
+  }
+  $("dlg").close(); render();
 };
+// ===== Ikon dinamis (activity-alias, lewat plugin native AppIcon) =====
+const AI = (window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.AppIcon) || null;
+const RANK = { Kaget:1, Cemberut:2, Ngambek:3 };
+let lastIcon = null, lastSig = null;
+function iconFor(ms){ return ms < 0 ? "Ngambek" : ms <= 10*60e3 ? "Cemberut" : ms <= 60*60e3 ? "Kaget" : null; }
+function iconAt(open, T){
+  let best = null;
+  open.forEach(t => { const k = iconFor(t.at - T); if (k && (!best || RANK[k] > RANK[best])) best = k; });
+  if (best) return best;
+  const nowDay = dayStr(Date.now());
+  return dayStr(T) === nowDay && (db.days[nowDay] || 0) >= GOAL ? "Bintang" : "Happy";
+}
+function syncIcon(open, now){
+  if (!AI) return;
+  const on = db.dyn !== false, want = on ? iconAt(open, now) : "Happy";
+  if (want !== lastIcon) { lastIcon = want; AI.setIcon({ name:want }).catch(() => {}); }
+  const sig = on ? JSON.stringify(open.map(t => t.at)) + "|" + ((db.days[dayStr(now)] || 0) >= GOAL) : "off";
+  if (sig === lastSig) return; lastSig = sig;
+  const ev = [];
+  if (on) {
+    const pts = new Set();
+    open.forEach(t => [t.at - 36e5, t.at - 6e5, t.at + 1].forEach(x => { if (x > now) pts.add(x); }));
+    const mid = new Date(now); mid.setHours(24,0,0,0); pts.add(mid.getTime());
+    let prev = want;
+    Array.from(pts).sort((a,b) => a - b).forEach(T => { const k = iconAt(open, T); if (k !== prev) { ev.push({ at:T, name:k }); prev = k; } });
+  }
+  AI.plan({ events:ev }).catch(() => {});
+}
+$("dyn").checked = db.dyn !== false;
+$("dyn").onchange = () => { db.dyn = $("dyn").checked; save(); lastSig = null; render(); toast(db.dyn ? "Ikon dinamis aktif" : "Ikon dinamis mati"); };
+
 // ===== Notifikasi (Capacitor Local Notifications) =====
 const LN = (window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.LocalNotifications) || null;
 const CH = "remindgo_alert";
@@ -404,8 +511,8 @@ async function schedule(t){
   } catch (e) { toast("Notifikasi gagal dijadwalkan"); }
 }
 function unschedule(t){
-  if (!LN || !t.nid) return;
-  LN.cancel({ notifications: PLAN.map((_,i) => ({ id:t.nid*20+i })) }).catch(()=>{});
+  if (!LN || !t.nid) return Promise.resolve();
+  return LN.cancel({ notifications: PLAN.map((_,i) => ({ id:t.nid*20+i })) }).catch(() => {});
 }
 async function askPerm(){
   await LN.createChannel({ id:CH, name:"Pengingat", description:"Pengingat jadwal Remind Go", importance:5, visibility:1, vibration:true });
@@ -434,7 +541,18 @@ $("testN").onclick = async () => {
 initNotif();
 $("hero").addEventListener("click", () => replay($("face"), "boing"));
 
-render(); stag($("pgHome")); setInterval(render, 30000);
+render(); setInterval(render, 30000);
+// loading screen: muat semua gambar maskot + font, minimal 1,3 detik
+function hideBoot(){
+  const b = $("boot"); if (!b || b.classList.contains("gone")) return;
+  b.classList.add("gone"); stag($("pgHome")); setTimeout(() => b.remove(), 700);
+}
+Promise.all([].concat(
+  Array.from({ length:16 }, (_, i) => new Promise(r => { const m = new Image(); m.onload = m.onerror = r; m.src = "m" + i + ".png"; })),
+  document.fonts ? [document.fonts.ready] : [],
+  [new Promise(r => setTimeout(r, calm ? 300 : 1400))]
+)).then(hideBoot);
+setTimeout(hideBoot, 4000);
 </script>
 </body>
 </html>
