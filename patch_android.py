@@ -8,43 +8,26 @@ RES = ROOT + "/res"
 JAVA = ROOT + "/java/com/remindgo/app"
 os.makedirs(JAVA, exist_ok=True)
 
-# nama alias -> (gambar maskot, warna latar)
-VARIANTS = {
-    "Kaget":    ("m5",  "#FFE1B3"),
-    "Cemberut": ("m15", "#FFC2B4"),
-    "Ngambek":  ("m8",  "#F2A3A0"),
-    "Bintang":  ("m4",  "#FFE9A6"),
-}
+# alias Icon0..Icon24 = tile 0..24 di icons.png (Icon0 = ikon utama)
+COUNT = 25
 
 # ---------- 1. Gambar ikon per ekspresi ----------
-def hexrgb(h):
-    h = h.lstrip("#"); return tuple(int(h[i:i+2], 16) for i in (0, 2, 4))
-
-def cat_img(f):
-    im = Image.open("www/%s.png" % f).convert("RGBA")
-    return im.crop(im.getbbox())
-
-def put(cat, size, bg, frac):
-    c = Image.new("RGBA", (size, size), bg)
-    box = size * frac
-    r = min(box / cat.width, box / cat.height)
-    k = cat.resize((max(1, round(cat.width * r)), max(1, round(cat.height * r))), Image.LANCZOS)
-    c.alpha_composite(k, ((size - k.width) // 2, (size - k.height) // 2))
-    return c
+from make_assets import tile, bgcolor, square, foreground
 
 FG = {"mdpi": 108, "hdpi": 162, "xhdpi": 216, "xxhdpi": 324, "xxxhdpi": 432}
 LEG = {"mdpi": 48, "hdpi": 72, "xhdpi": 96, "xxhdpi": 144, "xxxhdpi": 192}
 os.makedirs(RES + "/mipmap-anydpi-v26", exist_ok=True)
 colors = ['<?xml version="1.0" encoding="utf-8"?>', "<resources>"]
-for name, (face, bg) in VARIANTS.items():
-    n = name.lower()
-    cat = cat_img(face)
-    colors.append('    <color name="ic_%s_bg">%s</color>' % (n, bg))
+for idx in range(1, COUNT):
+    n = "t%d" % idx
+    im = tile(idx)
+    bg = bgcolor(im)
+    colors.append('    <color name="ic_%s_bg">#%02X%02X%02X</color>' % ((n,) + bg))
     for d, px in FG.items():
         os.makedirs(RES + "/mipmap-" + d, exist_ok=True)
-        put(cat, px, (0, 0, 0, 0), 0.60).save("%s/mipmap-%s/ic_%s_fg.png" % (RES, d, n))
+        foreground(im, px).save("%s/mipmap-%s/ic_%s_fg.png" % (RES, d, n))
     for d, px in LEG.items():
-        put(cat, px, hexrgb(bg) + (255,), 0.84).save("%s/mipmap-%s/ic_%s.png" % (RES, d, n))
+        square(im, px).save("%s/mipmap-%s/ic_%s.png" % (RES, d, n))
     with open("%s/mipmap-anydpi-v26/ic_%s.xml" % (RES, n), "w") as f:
         f.write('<?xml version="1.0" encoding="utf-8"?>\n'
                 '<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">\n'
@@ -76,11 +59,11 @@ def alias(name, icon, round_icon=""):
             '                <action android:name="android.intent.action.MAIN" />\n'
             '                <category android:name="android.intent.category.LAUNCHER" />\n'
             '            </intent-filter>\n'
-            '        </activity-alias>\n') % (name, "true" if name == "Happy" else "false", icon, round_icon)
+            '        </activity-alias>\n') % (name, "true" if name == "0" else "false", icon, round_icon)
 
-block = alias("Happy", "ic_launcher", '            android:roundIcon="@mipmap/ic_launcher_round"\n')
-for name in VARIANTS:
-    block += alias(name, "ic_" + name.lower())
+block = alias("0", "ic_launcher", '            android:roundIcon="@mipmap/ic_launcher_round"\n')
+for idx in range(1, COUNT):
+    block += alias(str(idx), "ic_t%d" % idx)
 block += ('        <receiver android:name=".IconAlarmReceiver" android:exported="false">\n'
           '            <intent-filter>\n'
           '                <action android:name="android.intent.action.BOOT_COMPLETED" />\n'
@@ -112,7 +95,8 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 
 public class IconSwitcher {
-    static final String[] NAMES = {"Happy", "Kaget", "Cemberut", "Ngambek", "Bintang"};
+    static final String[] NAMES = new String[25];
+    static { for (int i = 0; i < 25; i++) NAMES[i] = String.valueOf(i); }
 
     static ComponentName comp(Context c, String n) {
         return new ComponentName(c.getPackageName(), "com.remindgo.app.Icon" + n);
@@ -123,11 +107,11 @@ public class IconSwitcher {
         for (String n : NAMES) {
             int s = pm.getComponentEnabledSetting(comp(c, n));
             if (s == PackageManager.COMPONENT_ENABLED_STATE_ENABLED
-                    || (s == PackageManager.COMPONENT_ENABLED_STATE_DEFAULT && n.equals("Happy"))) {
+                    || (s == PackageManager.COMPONENT_ENABLED_STATE_DEFAULT && n.equals("0"))) {
                 return n;
             }
         }
-        return "Happy";
+        return "0";
     }
 
     static void set(Context c, String name) {
@@ -227,7 +211,7 @@ import com.getcapacitor.annotation.CapacitorPlugin;
 public class AppIconPlugin extends Plugin {
     @PluginMethod
     public void setIcon(PluginCall call) {
-        String name = call.getString("name", "Happy");
+        String name = call.getString("name", "0");
         IconSwitcher.set(getContext(), name);
         JSObject r = new JSObject();
         r.put("name", IconSwitcher.current(getContext()));
